@@ -2,5 +2,5 @@ projectKey=lalal
 serverUrl=http://localhost:9000
 serverVersion=26.2.0.119303
 dashboardUrl=http://localhost:9000/dashboard?id=lalal
-ceTaskId=090aa328-91fa-487a-a80c-bf8876f86d06
-ceTaskUrl=http://localhost:9000/api/ce/task?id=090aa328-91fa-487a-a80c-bf8876f86d06
+ceTaskId=c29d60cb-cce3-46f6-a9ef-69faeebf7bc7
+ceTaskUrl=http://localhost:9000/api/ce/task?id=c29d60cb-cce3-46f6-a9ef-69faeebf7bc7
