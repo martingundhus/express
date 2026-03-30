@@ -1,0 +1,6 @@
+projectKey=Task3Run4
+serverUrl=http://localhost:9000
+serverVersion=26.2.0.119303
+dashboardUrl=http://localhost:9000/dashboard?id=Task3Run4
+ceTaskId=4ac0dcc4-0b94-43a8-a51f-c6c025fa79ea
+ceTaskUrl=http://localhost:9000/api/ce/task?id=4ac0dcc4-0b94-43a8-a51f-c6c025fa79ea
