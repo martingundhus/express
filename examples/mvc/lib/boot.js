@@ -7,6 +7,7 @@
 var express = require('../../..');
 var fs = require('fs');
 var path = require('path');
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 module.exports = function(parent, options){
   var dir = path.join(__dirname, '..', 'controllers');
@@ -30,6 +31,8 @@ module.exports = function(parent, options){
     // generate routes based
     // on the exported methods
     for (var key in obj) {
+      if (!hasOwnProperty.call(obj, key)) continue;
+
       // "reserved" exports
       if (~['name', 'prefix', 'engine', 'before'].indexOf(key)) continue;
       // route exports
