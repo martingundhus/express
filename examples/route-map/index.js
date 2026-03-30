@@ -13,16 +13,21 @@ var app = module.exports = express();
 
 app.map = function(a, route){
   route = route || '';
-  for (var key in a) {
-    switch (typeof a[key]) {
+  var keys = Object.keys(a);
+
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var value = a[key];
+
+    switch (typeof value) {
       // { '/path': { ... }}
       case 'object':
-        app.map(a[key], route + key);
+        app.map(value, route + key);
         break;
       // get: function(){ ... }
       case 'function':
         if (verbose) console.log('%s %s', key, route);
-        app[key](route, a[key]);
+        app[key](route, value);
         break;
     }
   }

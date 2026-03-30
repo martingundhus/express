@@ -11,12 +11,12 @@ var path = require('path');
 module.exports = function(parent, options){
   var dir = path.join(__dirname, '..', 'controllers');
   var verbose = options.verbose;
-  fs.readdirSync(dir).forEach(function(name){
-    var file = path.join(dir, name)
+  fs.readdirSync(dir).forEach(function(controllerDirName){
+    var file = path.join(dir, controllerDirName)
     if (!fs.statSync(file).isDirectory()) return;
-    verbose && console.log('\n   %s:', name);
+    verbose && console.log('\n   %s:', controllerDirName);
     var obj = require(file);
-    var name = obj.name || name;
+    var name = obj.name || controllerDirName;
     var prefix = obj.prefix || '';
     var app = express();
     var handler;
@@ -29,7 +29,10 @@ module.exports = function(parent, options){
 
     // generate routes based
     // on the exported methods
-    for (var key in obj) {
+    var keys = Object.keys(obj);
+
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
       // "reserved" exports
       if (~['name', 'prefix', 'engine', 'before'].indexOf(key)) continue;
       // route exports
