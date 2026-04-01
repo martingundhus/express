@@ -52,7 +52,7 @@ describe('app.router', function(){
 
       it('should reject numbers for app.' + method, function(){
         var app = express();
-        assert.throws(app[method].bind(app, '/', 3), /Number/)
+        assert.throws(app[method].bind(app, '/', 3), /argument handler must be a function/)
       })
     });
 
