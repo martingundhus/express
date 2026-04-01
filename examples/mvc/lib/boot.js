@@ -7,6 +7,7 @@
 var express = require('../../..');
 var fs = require('fs');
 var path = require('path');
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 module.exports = function(parent, options){
   var dir = path.join(__dirname, '..', 'controllers');
@@ -16,7 +17,7 @@ module.exports = function(parent, options){
     if (!fs.statSync(file).isDirectory()) return;
     verbose && console.log('\n   %s:', name);
     var obj = require(file);
-    var name = obj.name || name;
+    var controllerName = obj.name || name;
     var prefix = obj.prefix || '';
     var app = express();
     var handler;
@@ -25,34 +26,38 @@ module.exports = function(parent, options){
 
     // allow specifying the view engine
     if (obj.engine) app.set('view engine', obj.engine);
-    app.set('views', path.join(__dirname, '..', 'controllers', name, 'views'));
+    app.set('views', path.join(__dirname, '..', 'controllers', controllerName, 'views'));
 
     // generate routes based
     // on the exported methods
     for (var key in obj) {
+      if (!hasOwnProperty.call(obj, key)) {
+        continue;
+      }
+
       // "reserved" exports
       if (~['name', 'prefix', 'engine', 'before'].indexOf(key)) continue;
       // route exports
       switch (key) {
         case 'show':
           method = 'get';
-          url = '/' + name + '/:' + name + '_id';
+          url = '/' + controllerName + '/:' + controllerName + '_id';
           break;
         case 'list':
           method = 'get';
-          url = '/' + name + 's';
+          url = '/' + controllerName + 's';
           break;
         case 'edit':
           method = 'get';
-          url = '/' + name + '/:' + name + '_id/edit';
+          url = '/' + controllerName + '/:' + controllerName + '_id/edit';
           break;
         case 'update':
           method = 'put';
-          url = '/' + name + '/:' + name + '_id';
+          url = '/' + controllerName + '/:' + controllerName + '_id';
           break;
         case 'create':
           method = 'post';
-          url = '/' + name;
+          url = '/' + controllerName;
           break;
         case 'index':
           method = 'get';
@@ -60,7 +65,7 @@ module.exports = function(parent, options){
           break;
         default:
           /* istanbul ignore next */
-          throw new Error('unrecognized route: ' + name + '.' + key);
+          throw new Error('unrecognized route: ' + controllerName + '.' + key);
       }
 
       // setup
