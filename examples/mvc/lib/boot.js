@@ -29,9 +29,9 @@ module.exports = function(parent, options){
 
     // generate routes based
     // on the exported methods
-    for (var key in obj) {
+    Object.keys(obj).forEach(function (key) {
       // "reserved" exports
-      if (~['name', 'prefix', 'engine', 'before'].indexOf(key)) continue;
+      if (['name', 'prefix', 'engine', 'before'].indexOf(key) !== -1) continue;
       // route exports
       switch (key) {
         case 'show':
@@ -75,7 +75,7 @@ module.exports = function(parent, options){
         app[method](url, handler);
         verbose && console.log('     %s %s -> %s', method.toUpperCase(), url, key);
       }
-    }
+    });
 
     // mount the app
     parent.use(app);

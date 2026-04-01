@@ -13,7 +13,7 @@ var app = module.exports = express();
 
 app.map = function(a, route){
   route = route || '';
-  for (var key in a) {
+  Object.keys(a).forEach(function (key) {
     switch (typeof a[key]) {
       // { '/path': { ... }}
       case 'object':
@@ -25,7 +25,7 @@ app.map = function(a, route){
         app[key](route, a[key]);
         break;
     }
-  }
+  });
 };
 
 var users = {
