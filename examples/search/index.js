@@ -35,7 +35,7 @@ db.sadd('cat', 'luna');
  * GET search for :query.
  */
 
-app.get('/search/:query?', function(req, res){
+app.get('/search{/:query}', function(req, res){
   var query = req.params.query;
   db.smembers(query, function(err, vals){
     if (err) return res.send(500);

@@ -22,9 +22,8 @@ app.get('/', function(req, res){
     '</ul>')
 });
 
-// /files/* is accessed via req.params[0]
-// but here we name it :file
-app.get('/files/:file(*)', function(req, res, next){
+// /files/* is captured in the named wildcard param.
+app.get('/files/*file', function(req, res, next){
   var filePath = resolvePath(FILES_DIR, req.params.file)
 
   res.download(filePath, function (err) {

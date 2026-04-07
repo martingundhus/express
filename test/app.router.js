@@ -1,4 +1,4 @@
-'use strict'
+﻿'use strict'
 
 var after = require('after');
 var express = require('../')
@@ -314,48 +314,48 @@ describe('app.router', function(){
       var app = express();
       var router = new express.Router({ mergeParams: true });
 
-      router.get('/*.*', function(req, res){
+      router.get('/*path.:ext', function(req, res){
         var keys = Object.keys(req.params).sort();
         res.send(keys.map(function(k){ return [k, req.params[k]] }));
       });
 
-      app.use('/user/id:(\\d+)', router);
+      app.use('/user/id\\::id', router);
 
       request(app)
       .get('/user/id:10/profile.json')
-      .expect(200, '[["0","10"],["1","profile"],["2","json"]]', done);
+      .expect(200, '[["ext","json"],["id","10"],["path","profile"]]', done);
     })
 
     it('should merge numeric indices req.params when more in parent', function(done){
       var app = express();
       var router = new express.Router({ mergeParams: true });
 
-      router.get('/*', function(req, res){
+      router.get('/*path', function(req, res){
         var keys = Object.keys(req.params).sort();
         res.send(keys.map(function(k){ return [k, req.params[k]] }));
       });
 
-      app.use('/user/id:(\\d+)/name:(\\w+)', router);
+      app.use('/user/id\\::id/name\\::name', router);
 
       request(app)
       .get('/user/id:10/name:tj/profile')
-      .expect(200, '[["0","10"],["1","tj"],["2","profile"]]', done);
+      .expect(200, '[["id","10"],["name","tj"],["path","profile"]]', done);
     })
 
     it('should merge numeric indices req.params when parent has same number', function(done){
       var app = express();
       var router = new express.Router({ mergeParams: true });
 
-      router.get('/name:(\\w+)', function(req, res){
+      router.get('/name\\::name', function(req, res){
         var keys = Object.keys(req.params).sort();
         res.send(keys.map(function(k){ return [k, req.params[k]] }));
       });
 
-      app.use('/user/id:(\\d+)', router);
+      app.use('/user/id\\::id', router);
 
       request(app)
       .get('/user/id:10/name:tj')
-      .expect(200, '[["0","10"],["1","tj"]]', done);
+      .expect(200, '[["id","10"],["name","tj"]]', done);
     })
 
     it('should ignore invalid incoming req.params', function(done){
@@ -381,11 +381,11 @@ describe('app.router', function(){
       var app = express();
       var router = new express.Router({ mergeParams: true });
 
-      router.get('/user:(\\w+)/*', function (req, res, next) {
+      router.get('/user\\::user{/*path}', function (req, res, next) {
         next();
       });
 
-      app.use('/user/id:(\\d+)', function (req, res, next) {
+      app.use('/user/id\\::id', function (req, res, next) {
         router(req, res, function (err) {
           var keys = Object.keys(req.params).sort();
           res.send(keys.map(function(k){ return [k, req.params[k]] }));
@@ -394,7 +394,7 @@ describe('app.router', function(){
 
       request(app)
       .get('/user/id:42/user:tj/profile')
-      .expect(200, '[["0","42"]]', done);
+      .expect(200, '[["id","42"]]', done);
     })
   })
 
@@ -552,19 +552,19 @@ describe('app.router', function(){
     })
   })
 
-  it('should allow escaped regexp', function(done){
+  it('should allow escaped reserved chars', function(done){
     var app = express();
 
-    app.get('/user/\\d+', function(req, res){
+    app.get('/user/\\(test\\)', function(req, res){
       res.end('woot');
     });
 
     request(app)
-    .get('/user/10')
+    .get('/user/(test)')
     .expect(200, function (err) {
       if (err) return done(err)
       request(app)
-      .get('/user/tj')
+      .get('/user/test')
       .expect(404, done);
     });
   })
@@ -588,8 +588,8 @@ describe('app.router', function(){
     it('should capture everything', function (done) {
       var app = express()
 
-      app.get('*', function (req, res) {
-        res.end(req.params[0])
+      app.get('/{*splat}', function (req, res) {
+        res.end('/' + (req.params.splat || ''))
       })
 
       request(app)
@@ -600,8 +600,8 @@ describe('app.router', function(){
     it('should decode the capture', function (done) {
       var app = express()
 
-      app.get('*', function (req, res) {
-        res.end(req.params[0])
+      app.get('/{*splat}', function (req, res) {
+        res.end('/' + (req.params.splat || ''))
       })
 
       request(app)
@@ -612,8 +612,8 @@ describe('app.router', function(){
     it('should denote a greedy capture group', function(done){
       var app = express();
 
-      app.get('/user/*.json', function(req, res){
-        res.end(req.params[0]);
+      app.get('/user/*userPath.json', function(req, res){
+        res.end(req.params.userPath);
       });
 
       request(app)
@@ -624,9 +624,9 @@ describe('app.router', function(){
     it('should work with several', function(done){
       var app = express();
 
-      app.get('/api/*.*', function(req, res){
-        var resource = req.params[0]
-          , format = req.params[1];
+      app.get('/api/*resource.:format', function(req, res){
+        var resource = req.params.resource
+          , format = req.params.format;
         res.end(resource + ' as ' + format);
       });
 
@@ -639,8 +639,8 @@ describe('app.router', function(){
       var app = express();
       var cb = after(2, done)
 
-      app.get('/api*', function(req, res){
-        res.send(req.params[0]);
+      app.get('/api{/*rest}', function(req, res){
+        res.send(req.params.rest ? '/' + req.params.rest : '');
       });
 
       request(app)
@@ -655,7 +655,7 @@ describe('app.router', function(){
     it('should allow naming', function(done){
       var app = express();
 
-      app.get('/api/:resource(*)', function(req, res){
+      app.get('/api/*resource', function(req, res){
         var resource = req.params.resource;
         res.end(resource);
       });
@@ -668,7 +668,7 @@ describe('app.router', function(){
     it('should not be greedy immediately after param', function(done){
       var app = express();
 
-      app.get('/user/:user*', function(req, res){
+      app.get('/user/:user{/*rest}', function(req, res){
         res.end(req.params.user);
       });
 
@@ -680,7 +680,7 @@ describe('app.router', function(){
     it('should eat everything after /', function(done){
       var app = express();
 
-      app.get('/user/:user*', function(req, res){
+      app.get('/user/:user{/*rest}', function(req, res){
         res.end(req.params.user);
       });
 
@@ -692,8 +692,8 @@ describe('app.router', function(){
     it('should span multiple segments', function(done){
       var app = express();
 
-      app.get('/file/*', function(req, res){
-        res.end(req.params[0]);
+      app.get('/file/*path', function(req, res){
+        res.end(req.params.path);
       });
 
       request(app)
@@ -704,8 +704,8 @@ describe('app.router', function(){
     it('should be optional', function(done){
       var app = express();
 
-      app.get('/file/*', function(req, res){
-        res.end(req.params[0]);
+      app.get('/file{/*path}', function(req, res){
+        res.end(req.params.path || '');
       });
 
       request(app)
@@ -716,8 +716,8 @@ describe('app.router', function(){
     it('should require a preceding /', function(done){
       var app = express();
 
-      app.get('/file/*', function(req, res){
-        res.end(req.params[0]);
+      app.get('/file/*path', function(req, res){
+        res.end(req.params.path);
       });
 
       request(app)
@@ -728,19 +728,19 @@ describe('app.router', function(){
     it('should keep correct parameter indexes', function(done){
       var app = express();
 
-      app.get('/*/user/:id', function (req, res) {
+      app.get('/*segment/user/:id', function (req, res) {
         res.send(req.params);
       });
 
       request(app)
       .get('/1/user/2')
-      .expect(200, '{"0":"1","id":"2"}', done);
+      .expect(200, '{"segment":"1","id":"2"}', done);
     })
 
     it('should work within arrays', function(done){
       var app = express();
 
-      app.get(['/user/:id', '/foo/*', '/:bar'], function (req, res) {
+      app.get(['/user/:id', '/foo/*splat', '/:bar'], function (req, res) {
         res.send(req.params.bar);
       });
 
@@ -791,8 +791,8 @@ describe('app.router', function(){
       var app = express();
       var cb = after(2, done);
 
-      app.get('/user(s)?/:user/:op', function(req, res){
-        res.end(req.params.op + 'ing ' + req.params.user + (req.params[0] ? ' (old)' : ''));
+      app.get('/user{s}/:user/:op', function(req, res){
+        res.end(req.params.op + 'ing ' + req.params.user + (req.path.indexOf('/users/') === 0 ? ' (old)' : ''));
       });
 
       request(app)
@@ -834,11 +834,11 @@ describe('app.router', function(){
     })
   })
 
-  describe(':name?', function(){
+  describe(':name optional segment', function(){
     it('should denote an optional capture group', function(done){
       var app = express();
 
-      app.get('/user/:user/:op?', function(req, res){
+      app.get('/user/:user{/:op}', function(req, res){
         var op = req.params.op || 'view';
         res.end(op + 'ing ' + req.params.user);
       });
@@ -851,7 +851,7 @@ describe('app.router', function(){
     it('should populate the capture group', function(done){
       var app = express();
 
-      app.get('/user/:user/:op?', function(req, res){
+      app.get('/user/:user{/:op}', function(req, res){
         var op = req.params.op || 'view';
         res.end(op + 'ing ' + req.params.user);
       });
@@ -881,12 +881,12 @@ describe('app.router', function(){
     })
   })
 
-  describe('.:name?', function(){
+  describe('.:name optional format', function(){
     it('should denote an optional format', function(done){
       var app = express();
       var cb = after(2, done)
 
-      app.get('/:name.:format?', function(req, res){
+      app.get('/:name{.:format}', function(req, res){
         res.end(req.params.name + ' as ' + (req.params.format || 'html'));
       });
 
@@ -905,8 +905,8 @@ describe('app.router', function(){
       var app = express()
         , calls = [];
 
-      app.get('/foo/:bar?', function(req, res, next){
-        calls.push('/foo/:bar?');
+      app.get('/foo{/:bar}', function(req, res, next){
+        calls.push('/foo{/:bar}');
         next();
       });
 
@@ -926,7 +926,7 @@ describe('app.router', function(){
 
       request(app)
       .get('/foo')
-      .expect(200, ['/foo/:bar?', '/foo', '/foo 2'], done)
+      .expect(200, ['/foo{/:bar}', '/foo', '/foo 2'], done)
     })
   })
 
@@ -990,8 +990,8 @@ describe('app.router', function(){
       var app = express()
         , calls = [];
 
-      app.get('/foo/:bar?', function(req, res, next){
-        calls.push('/foo/:bar?');
+      app.get('/foo{/:bar}', function(req, res, next){
+        calls.push('/foo{/:bar}');
         next();
       });
 
@@ -1017,7 +1017,7 @@ describe('app.router', function(){
 
       request(app)
       .get('/foo')
-      .expect(200, { calls: ['/foo/:bar?', '/foo'], error: 'fail' }, done)
+      .expect(200, { calls: ['/foo{/:bar}', '/foo'], error: 'fail' }, done)
     })
 
     it('should call handler in same route, if exists', function(done){
@@ -1069,7 +1069,7 @@ describe('app.router', function(){
     var app = express();
     var path = [];
 
-    app.get('*', function(req, res, next){
+    app.get('/{*splat}', function(req, res, next){
       path.push(0);
       next();
     });
@@ -1089,7 +1089,7 @@ describe('app.router', function(){
       next();
     });
 
-    app.get('*', function(req, res, next){
+    app.get('/{*splat}', function(req, res, next){
       path.push(4);
       next();
     });

@@ -354,14 +354,14 @@ describe('Router', function(){
         throw new Error('should not be called')
       }
 
-      router.all('*', function (req, res) {
+      router.all('/{*splat}', function (req, res) {
         res.end()
       })
 
       router.handle({ url: '/', method: 'GET' }, { end: cb }, no)
       router.handle({ url: '/foo', method: 'GET' }, { end: cb }, no)
-      router.handle({ url: 'foo', method: 'GET' }, { end: cb }, no)
-      router.handle({ url: '*', method: 'GET' }, { end: cb }, no)
+      router.handle({ url: '/bar', method: 'GET' }, { end: cb }, no)
+      router.handle({ url: '/baz', method: 'GET' }, { end: cb }, no)
     })
   })
 

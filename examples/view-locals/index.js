@@ -140,7 +140,7 @@ app.use('/api', function(req, res, next){
 
 /*
 
-app.all('/api/*', function(req, res, next){
+app.all('/api/*splat', function(req, res, next){
   res.locals.user = req.user;
   res.locals.sess = req.session;
   next();
